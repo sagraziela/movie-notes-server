@@ -6,13 +6,13 @@ class UsersController {
     async create(request, response) {
         const { name, email, password } = request.body;
 
-        const emailExists = await knex("users").select('email').where('email', '=', email);
+        const emailExists = await knex("users").where({ email }).first();
 
         if (!name) {
             throw new AppError("O nome é obrigatório!")
         }
 
-        if(emailExists.length !== 0) {
+        if(emailExists) {
             throw new AppError("Este email já foi cadastrado por outro usuário.")
         }
 
@@ -31,7 +31,8 @@ class UsersController {
         const { name, email, password, old_password } = request.body;
         const { id } = request.params;
 
-        const user = await knex("users").select("*").where("id", "=", id);
+        const user = await knex("users").where({ id });
+        console.log(user)
 
         if (!user) {
             throw new AppError("Usuário não encontrado.");
@@ -45,6 +46,7 @@ class UsersController {
         };
 
         if (password && old_password) {
+            console.log(old_password, user.password)
             const checkOldPassword = await compare(old_password, user[0].password);
 
             if (checkOldPassword === false) {
